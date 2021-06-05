@@ -11,10 +11,11 @@ $(EXECUTABLE): $(OBJS)
 	$(LD) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 barnes_hut.o: barnes_hut.c graphics/graphics.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 graphics/graphics.o: graphics/graphics.c graphics/graphics.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
+.PHONY: clean
 clean:
 	$(RM) $(EXECUTABLE) $(OBJS) result.gal

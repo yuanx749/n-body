@@ -7,8 +7,7 @@
 
 const double e0 = 1e-3;
 
-typedef struct particle
-{
+typedef struct particle {
     double x;
     double y;
     double ux;
@@ -18,8 +17,7 @@ typedef struct particle
     double m;
 } particle_t;
 
-typedef struct node
-{
+typedef struct node {
     double m; // mass of box
     double x; // center of mass
     double y; // center of mass
@@ -33,19 +31,16 @@ typedef struct node
     struct node *q4;
 } node_t;
 
-static double get_wall_seconds()
-{
+static double get_wall_seconds() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     double seconds = tv.tv_sec + (double)tv.tv_usec / 1000000;
     return seconds;
 }
 
-node_t * create_node(double w, double cx, double cy)
-{
+node_t * create_node(double w, double cx, double cy) {
     node_t *node = (node_t *)malloc(sizeof(node_t));
-    if (node == NULL)
-    {
+    if (node == NULL) {
         printf("Out of memory.\n");  
         exit(1);
     }
@@ -63,17 +58,14 @@ node_t * create_node(double w, double cx, double cy)
     return node;
 }
 
-void insert_quadtree(node_t *node, particle_t *p)
-{
-    if (p->x < 0 || p->x > 1 || p->y < 0 || p->y > 1)
-    {
+void insert_quadtree(node_t *node, particle_t *p) {
+    if (p->x < 0 || p->x > 1 || p->y < 0 || p->y > 1) {
         printf("Particle moves outside\n");
         exit(1);
     }
-    if (node->m > 0) // box already has particle
-    {
-        if (node->p != NULL && p->x == node->p->x && p->y == node->p->y)
-        {
+    if (node->m > 0) {
+        // box already has particle
+        if (node->p != NULL && p->x == node->p->x && p->y == node->p->y) {
             printf("Two particles are at the same position\n");
             exit(1);
         }
@@ -81,117 +73,127 @@ void insert_quadtree(node_t *node, particle_t *p)
         double w2 = node->w / 4;
         double w = w2 * 2; // partition width
         // find quadrant for new particle
-        if (p->x >= node->cx && p->y >= node->cy)
-        {
-            if (node->q1 == NULL) node->q1 = create_node(w, node->cx+w2, node->cy+w2);
+        if (p->x >= node->cx && p->y >= node->cy) {
+            if (node->q1 == NULL) {
+                node->q1 = create_node(w, node->cx+w2, node->cy+w2);
+            }
             insert_quadtree(node->q1, p);
-        }
-        else if (p->x < node->cx && p->y >= node->cy)
-        {
-            if (node->q2 == NULL) node->q2 = create_node(w, node->cx-w2, node->cy+w2);
+        } else if (p->x < node->cx && p->y >= node->cy) {
+            if (node->q2 == NULL) {
+                node->q2 = create_node(w, node->cx-w2, node->cy+w2);
+            }
             insert_quadtree(node->q2, p);
-        }
-        else if (p->x < node->cx && p->y < node->cy)
-        {
-            if (node->q3 == NULL) node->q3 = create_node(w, node->cx-w2, node->cy-w2);
+        } else if (p->x < node->cx && p->y < node->cy) {
+            if (node->q3 == NULL) {
+                node->q3 = create_node(w, node->cx-w2, node->cy-w2);
+            }
             insert_quadtree(node->q3, p);
-        }
-        else if (p->x >= node->cx && p->y < node->cy)
-        {
-            if (node->q4 == NULL) node->q4 = create_node(w, node->cx+w2, node->cy-w2);
+        } else if (p->x >= node->cx && p->y < node->cy) {
+            if (node->q4 == NULL) {
+                node->q4 = create_node(w, node->cx+w2, node->cy-w2);
+            }
             insert_quadtree(node->q4, p);
         }
         // move existing particle to new leaf
-        if (node->p != NULL)
-        {
-            if (node->p->x >= node->cx && node->p->y >= node->cy)
-            {
-                if (node->q1 == NULL) node->q1 = create_node(w, node->cx+w2, node->cy+w2);
+        if (node->p != NULL) {
+            if (node->p->x >= node->cx && node->p->y >= node->cy) {
+                if (node->q1 == NULL) {
+                    node->q1 = create_node(w, node->cx+w2, node->cy+w2);
+                }
                 insert_quadtree(node->q1, node->p);
-            }
-            else if (node->p->x < node->cx && node->p->y >= node->cy)
-            {
-                if (node->q2 == NULL) node->q2 = create_node(w, node->cx-w2, node->cy+w2);
+            } else if (node->p->x < node->cx && node->p->y >= node->cy) {
+                if (node->q2 == NULL) {
+                    node->q2 = create_node(w, node->cx-w2, node->cy+w2);
+                }
                 insert_quadtree(node->q2, node->p);
-            }
-            else if (node->p->x < node->cx && node->p->y < node->cy)
-            {
-                if (node->q3 == NULL) node->q3 = create_node(w, node->cx-w2, node->cy-w2);
+            } else if (node->p->x < node->cx && node->p->y < node->cy) {
+                if (node->q3 == NULL) {
+                    node->q3 = create_node(w, node->cx-w2, node->cy-w2);
+                }
                 insert_quadtree(node->q3, node->p);
-            }
-            else if (node->p->x >= node->cx && node->p->y < node->cy)
-            {
-                if (node->q4 == NULL) node->q4 = create_node(w, node->cx+w2, node->cy-w2);
+            } else if (node->p->x >= node->cx && node->p->y < node->cy) {
+                if (node->q4 == NULL) {
+                    node->q4 = create_node(w, node->cx+w2, node->cy-w2);
+                }
                 insert_quadtree(node->q4, node->p);
             }
             node->p = NULL; // only store particle in leaf
         }
-    }
-    else // new leaf
-    {
+    } else {
+        // new leaf
         node->m = p->m;
         node->p = p;
     }
 }
 
-void reset_quadtree(node_t *node)
-{
-    if (node->q1) reset_quadtree(node->q1);
-    if (node->q2) reset_quadtree(node->q2);
-    if (node->q3) reset_quadtree(node->q3);
-    if (node->q4) reset_quadtree(node->q4);
+void reset_quadtree(node_t *node) {
+    if (node->q1) {
+        reset_quadtree(node->q1);
+    }
+    if (node->q2) {
+        reset_quadtree(node->q2);
+    }
+    if (node->q3) {
+        reset_quadtree(node->q3);
+    }
+    if (node->q4) {
+        reset_quadtree(node->q4);
+    }
     node->m = 0;
     node->p = NULL;
 }
 
-int prune_quadtree(node_t *node)
-{
-    if (node == NULL) return 0;
-    if (prune_quadtree(node->q1)) node->q1 = NULL;
-    if (prune_quadtree(node->q2)) node->q2 = NULL;
-    if (prune_quadtree(node->q3)) node->q3 = NULL;
-    if (prune_quadtree(node->q4)) node->q4 = NULL;
-    if (node->m == 0)
-    {
+int prune_quadtree(node_t *node) {
+    if (node == NULL) {
+        return 0;
+    }
+    if (prune_quadtree(node->q1)) {
+        node->q1 = NULL;
+    }
+    if (prune_quadtree(node->q2)) {
+        node->q2 = NULL;
+    }
+    if (prune_quadtree(node->q3)) {
+        node->q3 = NULL;
+    }
+    if (prune_quadtree(node->q4)) {
+        node->q4 = NULL;
+    }
+    if (node->m == 0) {
         free(node);
         return 1;
-    }
-    else
+    } else {
         return 0;
+    }
 }
 
-void compute_center(node_t *node)
-{
-    if (node == NULL) return;
-    if (node->p != NULL) // leaf
-    {
+void compute_center(node_t *node) {
+    if (node == NULL) {
+        return;
+    }
+    if (node->p != NULL) {
+        // leaf
         node->x = node->p->x;
         node->y = node->p->y;
-    }
-    else
-    {
+    } else {
         double sum_mx = 0, sum_my = 0;
         compute_center(node->q1);
         compute_center(node->q2);
         compute_center(node->q3);
         compute_center(node->q4);
-        if (node->q1)
-        {
+        if (node->q1) {
             sum_mx += node->q1->m * node->q1->x;
             sum_my += node->q1->m * node->q1->y;
         }
-        if (node->q2)
-        {
+        if (node->q2) {
             sum_mx += node->q2->m * node->q2->x;
             sum_my += node->q2->m * node->q2->y;
         }
-        if (node->q3)
-        {
+        if (node->q3) {
             sum_mx += node->q3->m * node->q3->x;
             sum_my += node->q3->m * node->q3->y;
         }
-        if (node->q4)
-        {
+        if (node->q4) {
             sum_mx += node->q4->m * node->q4->x;
             sum_my += node->q4->m * node->q4->y;
         }
@@ -200,16 +202,16 @@ void compute_center(node_t *node)
     }
 }
 
-void compute_acceleration(node_t *node, particle_t *p, double theta_max, double G)
-{
-    if (node == NULL) return;
-    if (node->p == NULL) // internal node
-    {
+void compute_acceleration(node_t *node, particle_t *p, double theta_max, double G) {
+    if (node == NULL) {
+        return;
+    }
+    if (node->p == NULL) {
+        // internal node
         double rcx = p->x - node->cx;
         double rcy = p->y - node->cy;
         double distance = sqrt(rcx*rcx+rcy*rcy);
-        if (node->w <= theta_max * distance)
-        {
+        if (node->w <= theta_max * distance) {
             // Newton's law of gravitation
             double rx = p->x - node->x;
             double ry = p->y - node->y;
@@ -218,17 +220,14 @@ void compute_acceleration(node_t *node, particle_t *p, double theta_max, double 
             // calculate acceleration
             p->ax += -G * node->m * rx * r_cubic;  
             p->ay += -G * node->m * ry * r_cubic;
-        }
-        else
-        {
+        } else {
             compute_acceleration(node->q1, p, theta_max, G);
             compute_acceleration(node->q2, p, theta_max, G);
             compute_acceleration(node->q3, p, theta_max, G);
             compute_acceleration(node->q4, p, theta_max, G);
         }
-    }
-    else // leaf
-    {
+    } else {
+        // leaf
         // Newton's law of gravitation
         double rx = p->x - node->x;
         double ry = p->y - node->y;
@@ -240,8 +239,7 @@ void compute_acceleration(node_t *node, particle_t *p, double theta_max, double 
     }
 }
 
-void move_particle(double delta_t, particle_t *p)
-{
+void move_particle(double delta_t, particle_t *p) {
     // calculate velocity
     p->ux += delta_t*p->ax;
     p->uy += delta_t*p->ay;
@@ -253,11 +251,9 @@ void move_particle(double delta_t, particle_t *p)
     p->ay = 0;
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     // read input
-    if (argc != 8)
-    {
+    if (argc != 8) {
         printf("Give 7 input args: ./nbody N filename nsteps delta_t theta_max graphics n_threads\n");
         return 1;
     }
@@ -289,8 +285,7 @@ int main(int argc, char* argv[])
 
     // initialize particles
     particle_t *particles = (particle_t *)malloc(N*sizeof(particle_t));
-    for (int i = 0; i < N; i++)
-    {
+    for (int i = 0; i < N; i++) {
         particles[i].x  = buffer[6*i];
         particles[i].y  = buffer[6*i+1];
         particles[i].ux = buffer[6*i+3];
@@ -304,8 +299,7 @@ int main(int argc, char* argv[])
     double start_time = 0;
     int i;
     // initialize root box
-    if (graphics)
-    {
+    if (graphics) {
         InitializeGraphics(argv[0], 800, 800);
         SetCAxes(0, 1);
     }
@@ -314,50 +308,53 @@ int main(int argc, char* argv[])
 
     #pragma omp parallel private(i) num_threads(n_threads)
     {
-    for (int step = 0; step < nsteps; step++)
-    {
+    for (int step = 0; step < nsteps; step++) {
         #pragma omp single
         {
-        if (graphics)
-        {
+        if (graphics) {
             ClearScreen();
-            for (i = 0; i < N; i++)
+            for (i = 0; i < N; i++) {
                 DrawCircle(particles[i].x, particles[i].y, 1, 1, 0.0025, 0);
+            }
             Refresh();
             usleep(1000);
         }
 
-        if (step == 0) start_time = get_wall_seconds();
-        for (i = 0; i < N; i++)
+        if (step == 0) {
+            start_time = get_wall_seconds();
+        }
+        for (i = 0; i < N; i++) {
             insert_quadtree(root, &particles[i]);
+        }
         // free memory of empty nodes
         prune_quadtree(root);
         compute_center(root);
         }
         #pragma omp for schedule(static)
-        for (i = 0; i < N; i++)
+        for (i = 0; i < N; i++) {
             compute_acceleration(root, &particles[i], theta_max, G);
+        }
         #pragma omp for schedule(static)
-        for (i = 0; i < N; i++)
+        for (i = 0; i < N; i++) {
             move_particle(delta_t, &particles[i]);
+        }
         // reset all the nodes to empty
         #pragma omp single
         reset_quadtree(root);
     }
     }
+
     // free quadtree
     prune_quadtree(root);
     printf("%d %.3f\n", N, get_wall_seconds() - start_time);
 
-    if (graphics)
-    {
+    if (graphics) {
         FlushDisplay();
         CloseDisplay();
     }
 
     // write buffer
-    for (int i = 0; i < N; i++)
-    {
+    for (int i = 0; i < N; i++) {
         buffer[6*i]   = particles[i].x;
         buffer[6*i+1] = particles[i].y;
         buffer[6*i+3] = particles[i].ux;
